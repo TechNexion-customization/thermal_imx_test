@@ -7,6 +7,7 @@ fi
 
 function cpu_set_max_temperature()
 {
+    echo
     read -t 10 -p "Please set the threshold temperature (default: 85 degree): " MAX_TEMP_STR
     echo 
 

@@ -1,5 +1,15 @@
 #!/bin/sh
 
+#################################################################################
+# Copyright 2019 Technexion Ltd.
+#
+# Author: Richard Hu <richard.hu@technexion.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#################################################################################
+
 echo $(readlink -f "$0")
 EXEC_PATH=$(dirname $0)
 

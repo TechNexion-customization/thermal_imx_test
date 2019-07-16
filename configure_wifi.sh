@@ -1,5 +1,15 @@
 #!/bin/sh
 
+#################################################################################
+# Copyright 2019 Technexion Ltd.
+#
+# Author: Richard Hu <richard.hu@technexion.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#################################################################################
+
 ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )
 ( ifconfig | grep -q eth0 ) && ( connmanctl disable ethernet )
 echo
@@ -19,6 +29,7 @@ printf "List available AP: \n"
 echo ==========================
 cat /tmp/wifi_log | awk 'FNR == 1 {next} {print $(NF-1)}'
 
+echo
 read -p "Please select the AP that you want to connect: " AP_NANE
 read -p "Please enther passphrase: " PASSWORD
 cat << EOF > /var/lib/connman/test.config

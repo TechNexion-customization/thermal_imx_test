@@ -1,5 +1,15 @@
 #!/bin/sh
 
+#################################################################################
+# Copyright 2019 Technexion Ltd.
+#
+# Author: Richard Hu <richard.hu@technexion.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#################################################################################
+
 LOG=/thermal_wifi.log
 if [ -f  $LOG ] ; then
     rm $LOG
@@ -7,6 +17,8 @@ fi
 
 function wfi_config_server()
 {
+    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )
+
     read -t 10 -p "Please set iperf server ip address (default: 10.88.88.88): " IPERF_IP
     echo 
     if [ -z ${IPERF_IP} ]; then
