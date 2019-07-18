@@ -17,7 +17,7 @@ fi
 
 function wfi_config_server()
 {
-    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )
+    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )  && ( sleep 1 )
 
     read -t 10 -p "Please set iperf server ip address (default: 10.88.88.88): " IPERF_IP
     echo 
@@ -31,7 +31,7 @@ function wfi_config_server()
 
 function wfi_burn()
 {
-    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )
+    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
 
     sleep 5
 

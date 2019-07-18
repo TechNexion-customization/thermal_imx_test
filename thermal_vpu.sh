@@ -55,18 +55,19 @@ EOF
 
 function connect_network
 {
+    echo Checking network status...
+    NETWORK_STATE=$(connmanctl state | grep State | tr -d ' ' | cut -d '=' -f 2)
+
     if [ $NETWORK_STATE = 'online' ]; then
         echo network is connected!
         return 0
     fi
 
     if [ -s  $CONNMAN_CONF ]; then
-        echo Checking network status...
-        NETWORK_STATE=$(connmanctl state | grep State | tr -d ' ' | cut -d '=' -f 2)
         echo $NETWORK_STATE
         if [ $NETWORK_STATE = 'idle' ]; then
             echo Removing p2p interface and restarting connman.service...
-            ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )
+            ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
             systemctl restart connman.service
             loop=0
             while [ $loop -le 5 ]

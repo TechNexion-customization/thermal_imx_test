@@ -10,7 +10,8 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )
+( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
+
 ( ifconfig | grep -q eth0 ) && ( connmanctl disable ethernet )
 echo
 
