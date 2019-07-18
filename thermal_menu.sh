@@ -39,9 +39,10 @@ do
         ;;
     2)
         ${EXEC_PATH}/thermal_gpu.sh
-       ;;
+        ;;
     3)
-        break ;;
+        ${EXEC_PATH}/thermal_vpu.sh
+        ;;
     4)  
         ${EXEC_PATH}/thermal_wifi.sh
         ;;

@@ -21,6 +21,7 @@ CONNMAN_CONF=/var/lib/connman/test.config
 EXEC_PATH=$(dirname $(readlink -f "$0") )
 GST_LAUNCH='gst-launch-1.0 playbin'
 BG_PID=0
+TEST_FILE=$EXEC_PATH/test.mp4
 
 #only work under waylands
 function vpu_rotate_display
@@ -54,6 +55,11 @@ EOF
 
 function connect_network
 {
+    if [ $NETWORK_STATE = 'online' ]; then
+        echo network is connected!
+        return 0
+    fi
+
     if [ -s  $CONNMAN_CONF ]; then
         echo Checking network status...
         NETWORK_STATE=$(connmanctl state | grep State | tr -d ' ' | cut -d '=' -f 2)
@@ -83,14 +89,13 @@ function connect_network
 function vpu_prepare_test_file
 {
     
-    if [ ! -s test.mp4 ]; then
+    if [ ! -s $TEST_FILE ]; then
         echo 'Can not find test.mp4. Start to download test media file...'
         connect_network
-        wget $H264_FULLHD_LINK -O test.mp4
+        wget $H264_FULLHD_LINK -O $TEST_FILE
     else
         echo 'Find test.mp4!'
     fi
-    TEST_FILE=$EXEC_PATH/test.mp4
 }
 
 function vpu_play()
