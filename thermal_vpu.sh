@@ -16,6 +16,7 @@ if [ -f  $LOG ] ; then
 fi
 
 H264_FULLHD_LINK='http://samplemedia.linaro.org/H264/big_buck_bunny_1080p_H264_AAC_25fps_7200K.MP4'
+H264_FULLHD_MD5SUM="d68e46b777de4138ed05f3577b03a2c1"
 WESTON_INI=/etc/xdg/weston/weston.ini
 CONNMAN_CONF=/var/lib/connman/test.config
 EXEC_PATH=$(dirname $(readlink -f "$0") )
@@ -69,21 +70,37 @@ function connect_network
             echo Removing p2p interface and restarting connman.service...
             ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
             systemctl restart connman.service
-            loop=0
-            while [ $loop -le 5 ]
-            do
-                 NETWORK_STATE=$(connmanctl state | grep State | tr -d ' ' | cut -d '=' -f 2)
-                if [ $NETWORK_STATE == 'online' ]; then
-                        return 0
-                else
-                        sleep 1
-                fi
-                loop=$(expr $loop + 1)
-            done
         fi
     else
-        ${EXEC_PATH}/configure_wifi.sh
+        echo There is no connected network.
+        read -t 30 -p "(1) Connect ethernet (2) Configure wifi:  " NET_TYPE
+        echo
+        case $NET_TYPE in
+        1)
+            udhcpc -i eth0
+            ;;
+        2)
+            ${EXEC_PATH}/configure_wifi.sh
+            ;;
+        *)
+            echo "Wrong selection!!!"
+            exit 0
+            ;;
+        esac
+
     fi
+
+    loop=0
+    while [ $loop -le 5 ]
+    do
+         NETWORK_STATE=$(connmanctl state | grep State | tr -d ' ' | cut -d '=' -f 2)
+        if [ $NETWORK_STATE == 'online' ]; then
+                return 0
+        else
+                sleep 1
+        fi
+        loop=$(expr $loop + 1)
+    done
 }
 
 
@@ -93,7 +110,16 @@ function vpu_prepare_test_file
     if [ ! -s $TEST_FILE ]; then
         echo 'Can not find test.mp4. Start to download test media file...'
         connect_network
-        wget $H264_FULLHD_LINK -O $TEST_FILE
+        wget -c $H264_FULLHD_LINK -O $TEST_FILE
+        MD5SUM=$(md5sum $TEST_FILE | awk '{print $(1)}')
+        echo Checking MD5SUM: $MD5SUM
+        loop=0
+        while [ "$MD5SUM" != "$H264_FULLHD_MD5SUM" ] && [ $loop -le 3 ]
+        do
+            wget $H264_FULLHD_LINK -O $TEST_FILE
+            MD5SUM=$(md5sum $TEST_FILE)
+            loop=$(expr $loop + 1)
+        done
     else
         echo 'Find test.mp4!'
     fi
@@ -161,6 +187,7 @@ function trap_ctrlc ()
     # if omitted, shell script will continue execution
     cp $EXEC_PATH/weston.ini $WESTON_INI && sync
     systemctl restart weston
+    echo
     exit 2
 }
 
