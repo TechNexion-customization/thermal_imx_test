@@ -73,6 +73,7 @@ function trap_ctrlc ()
 
     echo "killall $GL_MARK"
     killall $GL_MARK
+    echo
     # exit shell script with error code 2
     # if omitted, shell script will continue execution
     exit 2

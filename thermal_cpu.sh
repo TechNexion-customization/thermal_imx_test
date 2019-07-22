@@ -73,6 +73,7 @@ function trap_ctrlc ()
     echo "Ctrl-C caught...performing clean up"
     
     echo "killall stress-ng"
+    echo
     killall stress-ng
     # exit shell script with error code 2
     # if omitted, shell script will continue execution
