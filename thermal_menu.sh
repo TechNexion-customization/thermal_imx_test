@@ -24,13 +24,14 @@ function menu {
     echo -e "\t 5. WIFI configuration"
     echo -e "\t 6. CPU + WIFI throughput stress test"
     echo
-    echo -e "\t Enter your choice:" 
+    echo -e "\t Enter your choice: "
     read -n 1 option
 }
 
 while [ 1 ]
 do
     menu
+    echo
     case $option in
     0)
         exit ;;
@@ -49,11 +50,15 @@ do
     5)
         ${EXEC_PATH}/configure_wifi.sh
         ;;
+    6)
+        ${EXEC_PATH}/thermal_cpu_wifi.sh
+        ;;
     *)
         clear
         echo "Wrong selection!!!" ;;
     esac
     echo -en "\n\n\t\tHit any key to continue"
+    echo
     read -n 1 option 
 done
 clear
