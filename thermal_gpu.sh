@@ -27,7 +27,10 @@ function gpu_burn()
     $GL_MARK --run-forever --fullscreen --annotate &
 
     sleep 2
-    start_time=$(date +%s)
+
+    PID=$$
+    echo
+    echo "PID is: $PID"
 
     while [ 1 ]
     do
@@ -36,18 +39,17 @@ function gpu_burn()
         t=`cat /sys/class/thermal/thermal_zone0/temp`
         temperature=`expr $t / 1000`
 
-        end_time=$(date +%s)
-
-        diff_time=$(($end_time-$start_time))
-
         echo
 
         MAX_TEMP=$((MAX_TEMP_STR))
         printf "Threshold temperature: %d degree \n" $MAX_TEMP
 
+        ELAPSE_TIME=$(ps -p $PID -o etime | awk 'FNR == 2 {print $1}')
+
         if [ $temperature -ge $MAX_TEMP ]; then
             echo "===============================" | tee -a $LOG
-            echo -n "Time to overheat: " && date -d@$diff_time -u +%H:%M:%S
+            printf "Running GPU burning test \n" | tee -a $LOG
+            printf "Time to overheat: %s \n" $ELAPSE_TIME | tee -a $LOG
             printf "Temperature: %d degree \n" $temperature | tee -a $LOG
             echo "===============================" | tee -a $LOG
             killall $GL_MARK
@@ -55,8 +57,8 @@ function gpu_burn()
             exit 0
         else
             echo "===============================" | tee -a $LOG
-            printf "Running CPU burning test \n"
-            echo -n "Elapsed time: " && date -d@$diff_time -u +%H:%M:%S
+            printf "Running GPU burning test \n" | tee -a $LOG
+            printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
             printf "Temperature: %s degree \n" $temperature | tee -a $LOG
             echo "===============================" | tee -a $LOG
             sync

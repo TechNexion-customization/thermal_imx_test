@@ -35,7 +35,8 @@ function wfi_burn()
 
     sleep 5
 
-    start_time=$(date +%s)
+    PID=$$
+    echo "PID is: $PID"
 
     while [ 1 ]
     do
@@ -43,12 +44,12 @@ function wfi_burn()
         t=`cat /sys/class/thermal/thermal_zone0/temp`
         temperature=`expr $t / 1000`
 
-        end_time=$(date +%s)
-
-        diff_time=$(($end_time-$start_time))
+        echo
+        ELAPSE_TIME=$(ps -p $PID -o etime | awk 'FNR == 2 {print $1}')
 
         echo "===============================" | tee -a $LOG
-        echo -n "Elapsed time: " && date -d@$diff_time -u +%H:%M:%S
+        printf "Running WIFI burning test \n" | tee -a $LOG
+        printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
         printf "CPU temperature: %s degree \n" $temperature | tee -a $LOG
         printf "Performing iperf3 test to %s ...\n" ${IPERF_IP} | tee -a $LOG
         iperf3 -c ${IPERF_IP} -t 10 -i 5 -w 3M -P 4 -l 24000 
