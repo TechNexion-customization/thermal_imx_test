@@ -37,15 +37,21 @@ gpu_burn()
 
     ( $GL_MARK --run-forever --fullscreen --annotate > /dev/null ) &
     if [ $? -eq 0 ]; then
-        echo "$!"
+        gpu_pid=$!
+        ( cpulimit --pid $! --limit 15 > /dev/null ) &
+        echo "$gpu_pid"
     else
         echo "$GL_MARK fails to start" | tee -a $LOG
         echo "0"
     fi
 }
 
+MEM_LOG=/tmp/memtester_test.log
 mem_burn()
 {
+    if [ -f  $MEM_LOG ] ; then
+        rm $MEM_LOG
+    fi
     # Run DDR stress test
     memsize=$(free | grep Mem | awk -F ' ' '{print $4}')
     # Only use 70% of free memory
@@ -53,7 +59,7 @@ mem_burn()
     #echo memsize ${memsize}
     #echo memsize_byte ${memsize_byte}
     echo 3 > /proc/sys/vm/drop_caches > /dev/null
-    ( memtester ${memsize_byte}B 1 > /dev/null ) &
+    ( memtester ${memsize_byte}B > $MEM_LOG ) &
     if [ $? -eq 0 ]; then
         # Force to only use CPU 5% or it uses CPU 100% 
         mem_pid=$!

@@ -30,7 +30,7 @@ cpu_mem_gpu_burn()
 
         # Run CPU burning test with 50% load
         if ( ! check_pid_exist $PID_CPU ); then
-	        PID_CPU=$(cpu_burn 50)
+	        PID_CPU=$(cpu_burn 40)
             echo ====start cpu_burn, PID $PID_CPU====
         fi
 
@@ -45,6 +45,8 @@ cpu_mem_gpu_burn()
 	        PID_MEM=$(mem_burn)
             echo ====start mem_burn, PID $PID_MEM====
         fi
+        failure_count=$(grep -c "FAILURE" $MEM_LOG)
+
 
         cpu_usage=$(get_cpu_usage)
         temperature=$(get_temperature)
@@ -53,13 +55,14 @@ cpu_mem_gpu_burn()
         ELAPSE_TIME=$(ps -p $PID_THIS -o etime | awk 'FNR == 2 {print $1}')
 
         echo "===============================" | tee -a $LOG
-        printf "Running CPU and GPU burning test \n" | tee -a $LOG
+        printf "Running CPU/Memory/GPU burning test \n" | tee -a $LOG
         printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
         printf "CPU usage: %s \n" $cpu_usage | tee -a $LOG
         printf "Temperature: %s degree \n" $temperature | tee -a $LOG
+        printf "Memory test failure: %s \n" $failure_count | tee -a $LOG
         echo "===============================" | tee -a $LOG
         sync
-        
+        sleep 3
     done
 }
 
