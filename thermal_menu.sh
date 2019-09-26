@@ -17,12 +17,13 @@ function menu {
     echo
     echo -e "\t Thermal Stress Test Menu \n"
     echo -e "\t 0. Quit menu"
-    echo -e "\t 1. CPU stress test (stress-ng)"
-    echo -e "\t 2. GPU stress test (glmark2)"
-    echo -e "\t 3. Video playback test"
-    echo -e "\t 4. WIFI throughput stress test(iperf)"
-    echo -e "\t 5. WIFI configuration"
-    echo -e "\t 6. CPU + WIFI throughput stress test"
+    echo -e "\t 1. CPU(default:60% load) + memtester + GPU stress test"
+    echo -e "\t 2. CPU stress test (stress-ng)"
+    echo -e "\t 3. GPU stress test (glmark2)"
+    echo -e "\t 4. Video playback test"
+    echo -e "\t 5. WIFI throughput stress test(iperf)"
+    echo -e "\t 6. WIFI configuration"
+    echo -e "\t 7. CPU + WIFI throughput stress test"
     echo
     echo -e "\t Enter your choice: "
     read -n 1 option
@@ -36,21 +37,24 @@ do
     0)
         exit ;;
     1)
-        ${EXEC_PATH}/thermal_cpu.sh
+        ${EXEC_PATH}/thermal_cpu_mem_gpu.sh
         ;;
     2)
-        ${EXEC_PATH}/thermal_gpu.sh
+        ${EXEC_PATH}/thermal_cpu.sh
         ;;
     3)
+        ${EXEC_PATH}/thermal_gpu.sh
+        ;;
+    4)
         ${EXEC_PATH}/thermal_vpu.sh
         ;;
-    4)  
+    5)
         ${EXEC_PATH}/thermal_wifi.sh
         ;;
-    5)
+    6)
         ${EXEC_PATH}/configure_wifi.sh
         ;;
-    6)
+    7)
         ${EXEC_PATH}/thermal_cpu_wifi.sh
         ;;
     *)
