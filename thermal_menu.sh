@@ -17,6 +17,7 @@ function menu {
     echo
     echo -e "\t Thermal Stress Test Menu \n"
     echo -e "\t 0. Quit menu"
+    echo -e "\t 1. CPU(default:60% load) + memtester + GPU + WIFI stress test"
     echo -e "\t 1. CPU(default:60% load) + memtester + GPU stress test"
     echo -e "\t 2. CPU stress test (stress-ng)"
     echo -e "\t 3. GPU stress test (glmark2)"
@@ -36,6 +37,9 @@ do
     case $option in
     0)
         exit ;;
+    1)
+        ${EXEC_PATH}/thermal_cpu_mem_gpu_wifi.sh
+        ;;
     1)
         ${EXEC_PATH}/thermal_cpu_mem_gpu.sh
         ;;
