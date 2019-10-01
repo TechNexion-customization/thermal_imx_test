@@ -23,7 +23,7 @@ if [ -f  "$LOG" ]; then
 fi
 echo LOG file is created under "$LOG"
 
-cpu_mem_gpu_burn()
+thermal_cpu_mem_gpu_wifi()
 {
     PID_THIS=$$
     echo "PID is: $PID_THIS"
@@ -41,17 +41,16 @@ cpu_mem_gpu_burn()
 
         # Run GPU burning test
         if ( ! check_pid_exist "$PID_GPU" ); then
-	        PID_GPU=$(gpu_burn)
+	        PID_GPU=$(gpu_burn 15)
             echo ----start gpu_burn, PID "$PID_GPU"----
         fi
 
         # Run DDR burning test
         if ( ! check_pid_exist "$PID_MEM" ); then
-	        PID_MEM=$(mem_burn)
+	        PID_MEM=$(mem_burn 5)
             echo ----start mem_burn, PID "$PID_MEM"----
         fi
         failure_count=$(grep -c "FAILURE" "$MEM_LOG")
-
 
         cpu_usage=$(get_cpu_usage)
         temperature=$(get_temperature)
@@ -88,6 +87,10 @@ trap_ctrlc ()
     echo "killall memtester"
     echo
     killall memtester
+
+    echo "killall iperf3"
+    echo
+    killall iperf3
     # exit shell script with error code 2
     # if omitted, shell script will continue execution
     exit 2
@@ -95,4 +98,4 @@ trap_ctrlc ()
 
 trap "trap_ctrlc" 2
 
-cpu_mem_gpu_burn
+thermal_cpu_mem_gpu_wifi

@@ -40,13 +40,13 @@ thermal_cpu_mem_gpu()
 
         # Run GPU burning test
         if ( ! check_pid_exist "$PID_GPU" ); then
-	        PID_GPU=$(gpu_burn)
+	        PID_GPU=$(gpu_burn 15)
             echo ----start gpu_burn, PID "$PID_GPU"----
         fi
 
         # Run DDR burning test
         if ( ! check_pid_exist "$PID_MEM" ); then
-	        PID_MEM=$(mem_burn)
+	        PID_MEM=$(mem_burn 5)
             echo ----start mem_burn, PID "$PID_MEM"----
         fi
         failure_count=$(grep -c "FAILURE" "$MEM_LOG")
