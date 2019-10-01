@@ -10,75 +10,52 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-LOG=/thermal_cpu.log
-if [ -f  $LOG ] ; then
-    rm $LOG
+EXEC_PATH=$(dirname "$0")
+FILE_NAME=$(basename -- "$0")
+FILE_NAME="${FILE_NAME%.*}"
+#echo "$EXEC_PATH"
+#echo "$FILE_NAME"
+source "$EXEC_PATH"/thermal_basic_func.sh
+
+LOG=/"$FILE_NAME".log
+if [ -f  "$LOG" ]; then
+    rm "$LOG"
 fi
+echo LOG file is created under "$LOG"
 
-function cpu_set_max_temperature()
+thermal_cpu()
 {
-    echo
-    read -t 10 -p "Please set the threshold temperature (default: 85 degree): " MAX_TEMP_STR
-    echo 
-
-    if [ -z ${MAX_TEMP_STR} ]; then
-        echo Skip to set threshold temerature.
-        echo Set threshold temerature as 85 degree.
-        MAX_TEMP_STR=85
-    fi
-}
-
-function cpu_burn()
-{
-    stress-ng -c $(nproc) &
+    PID_THIS=$$
+    echo "PID is: $PID_THIS"
     
-    sleep 2
-    
-    PID=$$
-    echo "PID is: $PID"
-
-    while [ 1 ]
+    while true
     do
         sleep 1
-    
-        t=`cat /sys/class/thermal/thermal_zone0/temp`
-        temperature=`expr $t / 1000`
-        cpu_usage=`top -b -n2 -p 1 | \
-    fgrep "Cpu(s)" | tail -1 | \
-    awk -F'id,' -v prefix="$prefix" \
-    '{ split($1, vs, ","); v=vs[length(vs)]; \
-    sub("%", "", v); printf "%s%.1f%%\n", prefix, 100 - v }'`
-    
-        echo 
 
-        MAX_TEMP=$((MAX_TEMP_STR))
-        printf "Threshold temperature: %d degree \n" $MAX_TEMP
-        
-        ELAPSE_TIME=$(ps -p $PID -o etime | awk 'FNR == 2 {print $1}')
-
-        if [ $temperature -ge $MAX_TEMP ]; then
-            echo "===============================" | tee -a $LOG
-            printf "Running CPU burning test \n" | tee -a $LOG
-            printf "Time to overheat: %s \n" $ELAPSE_TIME | tee -a $LOG
-            printf "CPU usage: %s \n" $cpu_usage | tee -a $LOG
-            printf "Temperature: %d degree \n" $temperature | tee -a $LOG
-            echo "===============================" | tee -a $LOG
-            killall stress-ng
-            sync
-            exit 0
-        else
-            echo "===============================" | tee -a $LOG
-            printf "Running CPU burning test \n" | tee -a $LOG
-            printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
-            printf "CPU usage: %s \n" $cpu_usage | tee -a $LOG
-            printf "Temperature: %s degree \n" $temperature | tee -a $LOG
-            echo "===============================" | tee -a $LOG
-            sync
+        # Run CPU burning test with full-load
+        if ( ! check_pid_exist "$PID_CPU" ); then
+	        PID_CPU=$(cpu_burn)
+            echo ----start cpu_burn, PID "$PID_CPU"----
         fi
+
+        cpu_usage=$(get_cpu_usage)
+        temperature=$(get_temperature)
+        echo
+
+        ELAPSE_TIME=$(ps -p "$PID_THIS" -o etime | awk 'FNR == 2 {print $1}')
+
+        echo "===============================" | tee -a "$LOG"
+        printf "Running CPU burning test \n" | tee -a "$LOG"
+        printf "Elapsed time: %s \n" "$ELAPSE_TIME" | tee -a "$LOG"
+        printf "CPU usage: %s \n" "$cpu_usage" | tee -a "$LOG"
+        printf "Temperature: %s degree \n" "$temperature" | tee -a "$LOG"
+        echo "===============================" | tee -a "$LOG"
+        sync
+        sleep 3
     done
 }
 
-function trap_ctrlc ()
+trap_ctrlc ()
 {
     # perform cleanup here
     echo "Ctrl-C caught...performing clean up"
@@ -93,5 +70,4 @@ function trap_ctrlc ()
 
 trap "trap_ctrlc" 2
 
-cpu_set_max_temperature
-cpu_burn
+thermal_cpu
