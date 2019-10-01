@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #################################################################################
 # Copyright 2019 Technexion Ltd.
@@ -10,82 +10,60 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-LOG=/thermal_gpu.log
-if [ -f  $LOG ] ; then
-    rm $LOG
+EXEC_PATH=$(dirname "$0")
+FILE_NAME=$(basename -- "$0")
+FILE_NAME="${FILE_NAME%.*}"
+#echo "$EXEC_PATH"
+#echo "$FILE_NAME"
+source "$EXEC_PATH"/thermal_basic_func.sh
+
+LOG=/"$FILE_NAME".log
+if [ -f  "$LOG" ]; then
+    rm "$LOG"
 fi
+echo LOG file is created under "$LOG"
 
-
-function gpu_set_max_temperature()
+thermal_gpu()
 {
-    echo
-    read -t 10 -p "Please set the threshold temperature (default: 85 degree): " MAX_TEMP_STR
-    echo
+    PID_THIS=$$
+    echo "PID is: $PID_THIS"
 
-    if [ -z ${MAX_TEMP_STR} ]; then
-        echo Skip to set threshold temerature.
-        echo Set threshold temerature as 85 degree.
-        MAX_TEMP_STR=85
-    fi
-}
-
-function gpu_burn()
-{
-    #Get real full name of glmark2 on different platform
-    GL_MARK=$(compgen -c | grep glmark2)
-
-    $GL_MARK --run-forever --fullscreen --annotate &
-
-    sleep 2
-
-    PID=$$
-    echo
-    echo "PID is: $PID"
-
-    while [ 1 ]
+    while true
     do
         sleep 1
 
-        t=`cat /sys/class/thermal/thermal_zone0/temp`
-        temperature=`expr $t / 1000`
-
-        echo
-
-        MAX_TEMP=$((MAX_TEMP_STR))
-        printf "Threshold temperature: %d degree \n" $MAX_TEMP
-
-        ELAPSE_TIME=$(ps -p $PID -o etime | awk 'FNR == 2 {print $1}')
-
-        if [ $temperature -ge $MAX_TEMP ]; then
-            echo "===============================" | tee -a $LOG
-            printf "Running GPU burning test \n" | tee -a $LOG
-            printf "Time to overheat: %s \n" $ELAPSE_TIME | tee -a $LOG
-            printf "Temperature: %d degree \n" $temperature | tee -a $LOG
-            echo "===============================" | tee -a $LOG
-            killall $GL_MARK
-            sync
-            exit 0
-        else
-            echo "===============================" | tee -a $LOG
-            printf "Running GPU burning test \n" | tee -a $LOG
-            printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
-            printf "Temperature: %s degree \n" $temperature | tee -a $LOG
-            echo "===============================" | tee -a $LOG
-            sync
+        # Run GPU burning test
+        if ( ! check_pid_exist "$PID_GPU" ); then
+	        PID_GPU=$(gpu_burn)
+            echo ----start gpu_burn, PID "$PID_GPU"----
         fi
 
+        cpu_usage=$(get_cpu_usage)
+        temperature=$(get_temperature)
+        echo
+
+        ELAPSE_TIME=$(ps -p "$PID_THIS" -o etime | awk 'FNR == 2 {print $1}')
+
+        echo "===============================" | tee -a "$LOG"
+        printf "Running GPU burning test \n" | tee -a "$LOG"
+        printf "Elapsed time: %s \n" "$ELAPSE_TIME" | tee -a "$LOG"
+        printf "CPU usage: %s \n" "$cpu_usage" | tee -a "$LOG"
+        printf "Temperature: %s degree \n" "$temperature" | tee -a "$LOG"
+        echo "===============================" | tee -a "$LOG"
+        sync
         sleep 3
     done
 }
 
-function trap_ctrlc ()
+trap_ctrlc ()
 {
     # perform cleanup here
     echo "Ctrl-C caught...performing clean up"
 
     echo "killall $GL_MARK"
-    killall $GL_MARK
     echo
+    killall "$GL_MARK"
+
     # exit shell script with error code 2
     # if omitted, shell script will continue execution
     exit 2
@@ -93,6 +71,4 @@ function trap_ctrlc ()
 
 trap "trap_ctrlc" 2
 
-gpu_set_max_temperature
-
-gpu_burn
+thermal_gpu
