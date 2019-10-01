@@ -11,17 +11,28 @@
 #################################################################################
 
 
-# Parameter: 1. CPU_LOAD
+# Parameter: 1. CPU_LOAD(Optional. Without this parameter, It runs at full-load.)
 # Return: PID of stress-ng
 cpu_burn()
 {
-    # Run CPU stress test with specific load
-    ( stress-ng -c "$(nproc)" -l $1 > /dev/null ) &
-    if [ $? -eq 0 ]; then
-        echo "$!"
-     else
-        echo "stress-ng fails to start!!!" | tee -a $LOG
-        echo "0"
+    if [ -z "$1" ]; then
+        # Run CPU stress test with full-load
+        ( stress-ng -c "$(nproc)" > /dev/null ) &
+        if [ $? -eq 0 ]; then
+            echo "$!"
+        else
+            echo "stress-ng fails to start!!!" | tee -a $LOG
+            echo "0"
+        fi
+    else
+        # Run CPU stress test with specific load
+        ( stress-ng -c "$(nproc)" -l $1 > /dev/null ) &
+        if [ $? -eq 0 ]; then
+            echo "$!"
+        else
+            echo "stress-ng fails to start!!!" | tee -a $LOG
+            echo "0"
+        fi
     fi
 }
 
