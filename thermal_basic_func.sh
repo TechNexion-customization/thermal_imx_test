@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #################################################################################
 # Copyright 2019 Technexion Ltd.
@@ -36,6 +36,7 @@ cpu_burn()
     fi
 }
 
+# Parameter: 1. CPU_LOAD(Optional. Without this parameter, It runs at full-load.)
 # Return: PID of glmark2
 gpu_burn()
 {
@@ -48,7 +49,9 @@ gpu_burn()
     ( $GL_MARK --run-forever --fullscreen --annotate > /dev/null ) &
     if [ $? -eq 0 ]; then
         gpu_pid=$!
-        ( cpulimit --pid $! --limit 15 > /dev/null ) &
+        if [ ! -z "$1" ]; then
+            ( cpulimit --pid $! --limit $1 > /dev/null ) &
+        fi
         echo "$gpu_pid"
     else
         echo "$GL_MARK fails to start" | tee -a $LOG
@@ -56,6 +59,8 @@ gpu_burn()
     fi
 }
 
+# Parameter: 1. CPU_LOAD(Optional. Without this parameter, It runs at full-load.)
+# Return: PID of memtester
 MEM_LOG=/tmp/memtester_test.log
 mem_burn()
 {
@@ -73,26 +78,28 @@ mem_burn()
     if [ $? -eq 0 ]; then
         # Force to only use CPU 5% or it uses CPU 100% 
         mem_pid=$!
-        ( cpulimit --pid $! --limit 5 > /dev/null ) &
+        if [ ! -z "$1" ]; then
+            ( cpulimit --pid $! --limit $1 > /dev/null ) &
+        fi
         echo "$mem_pid"
     else
         echo "memtester fails to start" | tee -a $LOG
         echo "0"
     fi    
 }
-
+DEFAULT_IPER_SERVER='10.88.88.196'
 wfi_config_server()
 {
     ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )  && ( sleep 1 )
 
-    read -t 10 -p "Please set iperf server ip address (default: 10.88.88.88): " IPERF_IP
+    read -t 10 -p "Please set iperf server ip address (default: $DEFAULT_IPER_SERVER): " IPERF_IP
     echo
     if [ -z ${IPERF_IP} ]; then
         echo Skip to set iperf server ip.
 
-        IPERF_IP='10.88.88.88'
-        echo Set default ip address as ${IPERF_IP}
+        IPERF_IP="$DEFAULT_IPER_SERVER"
     fi
+    echo Set IP address of iperf server as "${IPERF_IP}"
 
     sleep 5
 }
