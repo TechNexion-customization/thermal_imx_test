@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #################################################################################
 # Copyright 2019 Technexion Ltd.
@@ -10,52 +10,44 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-LOG=/thermal_wifi.log
-if [ -f  $LOG ] ; then
-    rm $LOG
+EXEC_PATH=$(dirname "$0")
+FILE_NAME=$(basename -- "$0")
+FILE_NAME="${FILE_NAME%.*}"
+#echo "$EXEC_PATH"
+#echo "$FILE_NAME"
+source "$EXEC_PATH"/thermal_basic_func.sh
+
+LOG=/"$FILE_NAME".log
+if [ -f  "$LOG" ]; then
+    rm "$LOG"
 fi
+echo LOG file is created under "$LOG"
 
-wfi_config_server()
+thermal_wifi()
 {
-    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )  && ( sleep 1 )
+    PID_THIS=$$
+    echo "PID is: $PID_THIS"
+    wfi_config_server
 
-    read -t 10 -p "Please set iperf server ip address (default: 10.88.88.88): " IPERF_IP
-    echo 
-    if [ -z ${IPERF_IP} ]; then
-        echo Skip to set iperf server ip.
-        
-        IPERF_IP='10.88.88.88'
-        echo Set default ip address as ${IPERF_IP}
-    fi
-}
-
-wfi_burn()
-{
-    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
-
-    sleep 5
-
-    PID=$$
-    echo "PID is: $PID"
-
-    while [ 1 ]
+    while true
     do
-        sleep 3
-        t=`cat /sys/class/thermal/thermal_zone0/temp`
-        temperature=`expr $t / 1000`
+        sleep 1
 
+        cpu_usage=$(get_cpu_usage)
+        temperature=$(get_temperature)
         echo
-        ELAPSE_TIME=$(ps -p $PID -o etime | awk 'FNR == 2 {print $1}')
 
-        echo "===============================" | tee -a $LOG
-        printf "Running WIFI burning test \n" | tee -a $LOG
-        printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
-        printf "CPU temperature: %s degree \n" $temperature | tee -a $LOG
-        printf "Performing iperf3 test to %s ...\n" ${IPERF_IP} | tee -a $LOG
-        iperf3 -c ${IPERF_IP} -t 10 -i 5 -w 3M -P 4 -l 24000 
-        echo "===============================" | tee -a $LOG
+        ELAPSE_TIME=$(ps -p "$PID_THIS" -o etime | awk 'FNR == 2 {print $1}')
+
+        echo "===============================" | tee -a "$LOG"
+        printf "Running WIFI burning test \n" | tee -a "$LOG"
+        printf "Elapsed time: %s \n" "$ELAPSE_TIME" | tee -a "$LOG"
+        printf "CPU usage: %s \n" "$cpu_usage" | tee -a "$LOG"
+        printf "Temperature: %s degree \n" "$temperature" | tee -a "$LOG"
+        wifi_burn "$LOG"
+        echo "===============================" | tee -a "$LOG"
         sync
-
+        sleep 3
     done
 }
 
@@ -65,6 +57,7 @@ trap_ctrlc ()
     echo "Ctrl-C caught...performing clean up"
     
     echo "killall iperf3"
+    echo
     killall iperf3
     # exit shell script with error code 2
     # if omitted, shell script will continue execution
@@ -73,5 +66,4 @@ trap_ctrlc ()
 
 trap "trap_ctrlc" 2
 
-wfi_config_server
-wfi_burn
+thermal_wifi
