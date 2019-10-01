@@ -15,10 +15,10 @@ FILE_NAME=$(basename -- "$0")
 FILE_NAME="${FILE_NAME%.*}"
 #echo "$EXEC_PATH"
 #echo "$FILE_NAME"
-source  "$EXEC_PATH"/thermal_basic_func.sh
+source "$EXEC_PATH"/thermal_basic_func.sh
 
 LOG=/"$FILE_NAME".log
-if [ -f  "$LOG" ] ; then
+if [ -f  "$LOG" ]; then
     rm "$LOG"
 fi
 echo LOG file is created under "$LOG"
@@ -55,8 +55,8 @@ cpu_mem_gpu_burn()
 
         cpu_usage=$(get_cpu_usage)
         temperature=$(get_temperature)
-        echo 
-     
+        echo
+
         ELAPSE_TIME=$(ps -p "$PID_THIS" -o etime | awk 'FNR == 2 {print $1}')
 
         echo "===============================" | tee -a "$LOG"
