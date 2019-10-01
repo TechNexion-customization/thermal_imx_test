@@ -23,7 +23,6 @@ cpu_burn()
         echo "stress-ng fails to start!!!" | tee -a $LOG
         echo "0"
     fi
-   
 }
 
 # Return: PID of glmark2
@@ -69,6 +68,32 @@ mem_burn()
         echo "memtester fails to start" | tee -a $LOG
         echo "0"
     fi    
+}
+
+wfi_config_server()
+{
+    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )  && ( sleep 1 )
+
+    read -t 10 -p "Please set iperf server ip address (default: 10.88.88.88): " IPERF_IP
+    echo
+    if [ -z ${IPERF_IP} ]; then
+        echo Skip to set iperf server ip.
+
+        IPERF_IP='10.88.88.88'
+        echo Set default ip address as ${IPERF_IP}
+    fi
+
+    sleep 5
+}
+
+# Return: location of LOG file
+wifi_burn()
+{
+    ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
+
+    echo "iperf3 test is running..."
+
+    iperf3 -c ${IPERF_IP} -t 10 -i 5 -w 3M -P 4 -l 24000 | tail -n 4 | tee -a $1
 }
 
 get_temperature()
