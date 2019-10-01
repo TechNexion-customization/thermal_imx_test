@@ -15,7 +15,7 @@ if [ -f  $LOG ] ; then
     rm $LOG
 fi
 
-function wfi_config_server()
+wfi_config_server()
 {
     ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del )  && ( sleep 1 )
 
@@ -29,7 +29,7 @@ function wfi_config_server()
     fi
 }
 
-function wfi_burn()
+wfi_burn()
 {
     ( ifconfig -a | grep -q p2p ) && ( iw dev p2p0 del ) && ( sleep 1 )
 
@@ -59,7 +59,7 @@ function wfi_burn()
     done
 }
 
-function trap_ctrlc ()
+trap_ctrlc ()
 {
     # perform cleanup here
     echo "Ctrl-C caught...performing clean up"
