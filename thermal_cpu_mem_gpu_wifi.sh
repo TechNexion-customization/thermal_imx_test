@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #################################################################################
 # Copyright 2019 Technexion Ltd.
@@ -10,14 +10,18 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-EXEC_PATH=$(dirname $0)
-echo $EXEC_PATH
-source  ${EXEC_PATH}/thermal_basic_func.sh
+EXEC_PATH=$(dirname "$0")
+FILE_NAME=$(basename -- "$0")
+FILE_NAME="${FILE_NAME%.*}"
+#echo "$EXEC_PATH"
+#echo "$FILE_NAME"
+source  "$EXEC_PATH"/thermal_basic_func.sh
 
-LOG=/thermal_cpu_mem_gpu_wifi.log
-if [ -f  $LOG ] ; then
-    rm $LOG
+LOG=/"$FILE_NAME".log
+if [ -f  "$LOG" ] ; then
+    rm "$LOG"
 fi
+echo LOG file is created under "$LOG"
 
 cpu_mem_gpu_burn()
 {
@@ -29,40 +33,40 @@ cpu_mem_gpu_burn()
     do
         sleep 1
 
-        # Run CPU burning test with 40% load
-        if ( ! check_pid_exist $PID_CPU ); then
-	        PID_CPU=$(cpu_burn 40)
-            echo ====start cpu_burn, PID $PID_CPU====
+        # Run CPU burning test with 50% load
+        if ( ! check_pid_exist "$PID_CPU" ); then
+	        PID_CPU=$(cpu_burn 50)
+            echo ----start cpu_burn, PID "$PID_CPU"----
         fi
 
         # Run GPU burning test
-        if ( ! check_pid_exist $PID_GPU ); then
+        if ( ! check_pid_exist "$PID_GPU" ); then
 	        PID_GPU=$(gpu_burn)
-            echo ====start gpu_burn, PID $PID_GPU====
+            echo ----start gpu_burn, PID "$PID_GPU"----
         fi
 
         # Run DDR burning test
-        if ( ! check_pid_exist $PID_MEM ); then
+        if ( ! check_pid_exist "$PID_MEM" ); then
 	        PID_MEM=$(mem_burn)
-            echo ====start mem_burn, PID $PID_MEM====
+            echo ----start mem_burn, PID "$PID_MEM"----
         fi
-        failure_count=$(grep -c "FAILURE" $MEM_LOG)
+        failure_count=$(grep -c "FAILURE" "$MEM_LOG")
 
 
         cpu_usage=$(get_cpu_usage)
         temperature=$(get_temperature)
         echo 
      
-        ELAPSE_TIME=$(ps -p $PID_THIS -o etime | awk 'FNR == 2 {print $1}')
+        ELAPSE_TIME=$(ps -p "$PID_THIS" -o etime | awk 'FNR == 2 {print $1}')
 
-        echo "===============================" | tee -a $LOG
-        printf "Running CPU/Memory/GPU/WIFI burning test \n" | tee -a $LOG
-        printf "Elapsed time: %s \n" $ELAPSE_TIME | tee -a $LOG
-        printf "CPU usage: %s \n" $cpu_usage | tee -a $LOG
-        printf "Temperature: %s degree \n" $temperature | tee -a $LOG
-        printf "Memory test failure: %s \n" $failure_count | tee -a $LOG
-        wifi_burn $LOG
-        echo "===============================" | tee -a $LOG
+        echo "===============================" | tee -a "$LOG"
+        printf "Running CPU/Memory/GPU/WIFI burning test \n" | tee -a "$LOG"
+        printf "Elapsed time: %s \n" "$ELAPSE_TIME" | tee -a "$LOG"
+        printf "CPU usage: %s \n" "$cpu_usage" | tee -a "$LOG"
+        printf "Temperature: %s degree \n" "$temperature" | tee -a "$LOG"
+        printf "Memory test failure: %s \n" "$failure_count" | tee -a "$LOG"
+        wifi_burn "$LOG"
+        echo "===============================" | tee -a "$LOG"
         sync
         sleep 3
     done
@@ -79,9 +83,9 @@ trap_ctrlc ()
 
     echo "killall $GL_MARK"
     echo
-    killall $GL_MARK
+    killall "$GL_MARK"
 
-    echo "killall $memtester"
+    echo "killall memtester"
     echo
     killall memtester
     # exit shell script with error code 2
