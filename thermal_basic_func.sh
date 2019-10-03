@@ -21,16 +21,16 @@ cpu_burn()
         if [ $? -eq 0 ]; then
             echo "$!"
         else
-            echo "stress-ng fails to start!!!" | tee -a $LOG
+            echo "stress-ng fails to start!!!" | tee -a "$LOG"
             echo "0"
         fi
     else
         # Run CPU stress test with specific load
-        ( stress-ng -c "$(nproc)" -l $1 > /dev/null ) &
+        ( stress-ng -c "$(nproc)" -l "$1" > /dev/null ) &
         if [ $? -eq 0 ]; then
             echo "$!"
         else
-            echo "stress-ng fails to start!!!" | tee -a $LOG
+            echo "stress-ng fails to start!!!" | tee -a "$LOG"
             echo "0"
         fi
     fi
@@ -50,11 +50,11 @@ gpu_burn()
     if [ $? -eq 0 ]; then
         gpu_pid=$!
         if [ ! -z "$1" ]; then
-            ( cpulimit --pid $! --limit $1 > /dev/null ) &
+            ( cpulimit --pid "$!" --limit "$1" > /dev/null ) &
         fi
         echo "$gpu_pid"
     else
-        echo "$GL_MARK fails to start" | tee -a $LOG
+        echo "$GL_MARK fails to start" | tee -a "$LOG"
         echo "0"
     fi
 }
@@ -70,7 +70,7 @@ mem_burn()
     # Run DDR stress test
     memsize=$(free | grep Mem | awk -F ' ' '{print $4}')
     # Only use 70% of free memory
-    memsize_byte=$((${memsize}*700))
+    memsize_byte=$(( memsize*700 ))
     #echo memsize ${memsize}
     #echo memsize_byte ${memsize_byte}
     echo 3 > /proc/sys/vm/drop_caches > /dev/null
@@ -79,11 +79,11 @@ mem_burn()
         # Force to only use CPU 5% or it uses CPU 100% 
         mem_pid=$!
         if [ ! -z "$1" ]; then
-            ( cpulimit --pid $! --limit $1 > /dev/null ) &
+            ( cpulimit --pid "$!" --limit "$1" > /dev/null ) &
         fi
         echo "$mem_pid"
     else
-        echo "memtester fails to start" | tee -a $LOG
+        echo "memtester fails to start" | tee -a "$LOG"
         echo "0"
     fi    
 }
@@ -94,7 +94,7 @@ wfi_config_server()
 
     read -t 10 -p "Please set iperf server ip address (default: $DEFAULT_IPER_SERVER): " IPERF_IP
     echo
-    if [ -z ${IPERF_IP} ]; then
+    if [ -z "$IPERF_IP" ]; then
         echo Skip to set iperf server ip.
 
         IPERF_IP="$DEFAULT_IPER_SERVER"
@@ -111,35 +111,34 @@ wifi_burn()
 
     echo "iperf3 test is running..."
 
-    iperf3 -c ${IPERF_IP} -t 10 -i 5 -w 3M -P 4 -l 24000 | tail -n 4 | tee -a $1
+    iperf3 -c "$IPERF_IP" -t 10 -i 5 -w 3M -P 4 -l 24000 | tail -n 4 | tee -a "$1"
 }
 
 get_temperature()
 {
-    t=`cat /sys/class/thermal/thermal_zone0/temp`
-    temperature=`expr $t / 1000`
+    t=$(cat /sys/class/thermal/thermal_zone0/temp)
+    temperature=$(( t/1000 ))
     echo $temperature
 }
 
 get_cpu_usage()
 {
-    cpu_usage=`top -b -n2 -p 1 | \
+    cpu_usage=$(top -b -n2 -p 1 | \
     fgrep "Cpu(s)" | tail -1 | \
     awk -F'id,' -v prefix="$prefix" \
-    '{ split($1, vs, ","); v=vs[length(vs)]; \
-    sub("%", "", v); printf "%s%.1f%%\n", prefix, 100 - v }'`
+    '{ split($1, vs, ","); v=vs[length(vs)]; sub("%", "", v); printf "%s%.1f%%\n", prefix, 100 - v }')
 
-    echo $cpu_usage
+    echo "$cpu_usage"
 }
 
 # Parameter: 1. PID
 check_pid_exist()
 {
     #echo 'inside check_pid_exist'
-    if [ -z $1 ]; then
+    if [ -z "$1" ]; then
         #echo 'empty PID'
         return 1
-    elif (ps -p $1 > /dev/null 2>&1 ); then
+    elif (ps -p "$1" > /dev/null 2>&1 ); then
         #echo 'PID exist'
         return 0
     else
