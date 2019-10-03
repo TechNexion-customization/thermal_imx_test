@@ -10,10 +10,18 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-LOG=/thermal_vpu.log
-if [ -f  $LOG ] ; then
-    rm $LOG
+EXEC_PATH=$(dirname "$0")
+FILE_NAME=$(basename -- "$0")
+FILE_NAME="${FILE_NAME%.*}"
+#echo "$EXEC_PATH"
+#echo "$FILE_NAME"
+source "$EXEC_PATH"/thermal_basic_func.sh
+
+LOG=/"$FILE_NAME".log
+if [ -f  "$LOG" ]; then
+    rm "$LOG"
 fi
+echo LOG file is created under "$LOG"
 
 H264_FULLHD_LINK='http://samplemedia.linaro.org/H264/big_buck_bunny_1080p_H264_AAC_25fps_7200K.MP4'
 H264_FULLHD_MD5SUM="d68e46b777de4138ed05f3577b03a2c1"
@@ -149,29 +157,26 @@ vpu_play()
 
     BG_PID=$!; echo "$BG_PID"
 
-    sleep 2
-    start_time=$(date +%s)
+    PID_THIS=$$
+    echo "PID is: $PID_THIS"
 
     while true
     do
         sleep 1
 
-        t=$(cat /sys/class/thermal/thermal_zone0/temp)
-        temperature=$(( t/1000 ))
-
-        end_time=$(date +%s)
-
-        diff_time=$(( end_time-start_time ))
-
+        cpu_usage=$(get_cpu_usage)
+        temperature=$(get_temperature)
         echo
 
-        echo "===============================" | tee -a $LOG
-        printf "Running VPU playback test \n"
-        echo -n "Elapsed time: " && date -d@$diff_time -u +%H:%M:%S
-        printf "Temperature: %s degree \n" "$temperature" | tee -a $LOG
-        echo "===============================" | tee -a $LOG
-        sync
+        ELAPSE_TIME=$(ps -p "$PID_THIS" -o etime | awk 'FNR == 2 {print $1}')
 
+        echo "===============================" | tee -a "$LOG"
+        printf "Running VPU burning test \n" | tee -a "$LOG"
+        printf "Elapsed time: %s \n" "$ELAPSE_TIME" | tee -a "$LOG"
+        printf "CPU usage: %s \n" "$cpu_usage" | tee -a "$LOG"
+        printf "Temperature: %s degree \n" "$temperature" | tee -a "$LOG"
+        echo "===============================" | tee -a "$LOG"
+        sync
         sleep 3
     done
 }
