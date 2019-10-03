@@ -17,14 +17,15 @@ function menu {
     echo
     echo -e "\t Thermal Stress Test Menu \n"
     echo -e "\t 0. Quit menu"
-    echo -e "\t 1. CPU(default:60% load) + memtester + GPU + WIFI stress test"
-    echo -e "\t 1. CPU(default:60% load) + memtester + GPU stress test"
-    echo -e "\t 2. CPU stress test (stress-ng)"
-    echo -e "\t 3. GPU stress test (glmark2)"
-    echo -e "\t 4. Video playback test"
-    echo -e "\t 5. WIFI throughput stress test(iperf)"
-    echo -e "\t 6. WIFI configuration"
-    echo -e "\t 7. CPU + WIFI throughput stress test"
+    echo -e "\t 1. CPU(50%) + memtester(5%) + GPU(15%) + WIFI stress test"
+    echo -e "\t 2. CPU(50%) + memtester(5%) + GPU(15%) stress test"
+    echo -e "\t 3. CPU stress test (100%)"
+    echo -e "\t 4. GPU stress test (100%)"
+    echo -e "\t 5. Memory stress test (100%)"
+    echo -e "\t 6. Video playback test"
+    echo -e "\t 7. WIFI configuration"
+    echo -e "\t 8. WIFI throughput stress test(iperf)"
+    echo -e "\t 9. CPU(100%) + WIFI throughput stress test"
     echo
     echo -e "\t Enter your choice: "
     read -n 1 option
@@ -40,25 +41,28 @@ do
     1)
         ${EXEC_PATH}/thermal_cpu_mem_gpu_wifi.sh
         ;;
-    1)
+    2)
         ${EXEC_PATH}/thermal_cpu_mem_gpu.sh
         ;;
-    2)
+    3)
         ${EXEC_PATH}/thermal_cpu.sh
         ;;
-    3)
+    4)
         ${EXEC_PATH}/thermal_gpu.sh
         ;;
-    4)
-        ${EXEC_PATH}/thermal_vpu.sh
-        ;;
     5)
-        ${EXEC_PATH}/thermal_wifi.sh
+        ${EXEC_PATH}/thermal_mem.sh
         ;;
     6)
-        ${EXEC_PATH}/configure_wifi.sh
+        ${EXEC_PATH}/thermal_vpu.sh
         ;;
     7)
+        ${EXEC_PATH}/configure_wifi.sh
+        ;;
+    8)
+        ${EXEC_PATH}/thermal_wifi.sh
+        ;;
+    9)
         ${EXEC_PATH}/thermal_cpu_wifi.sh
         ;;
     *)
