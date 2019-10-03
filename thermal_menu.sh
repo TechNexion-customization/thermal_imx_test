@@ -10,15 +10,16 @@
 # published by the Free Software Foundation.
 #################################################################################
 
-echo $(readlink -f "$0")
-EXEC_PATH=$(dirname $0)
+echo
+readlink -f "$0"
+EXEC_PATH=$(dirname "$0")
 
 function menu {
     echo
     echo -e "\t Thermal Stress Test Menu \n"
     echo -e "\t 0. Quit menu"
-    echo -e "\t 1. CPU(50%) + memtester(5%) + GPU(15%) + WIFI stress test"
-    echo -e "\t 2. CPU(50%) + memtester(5%) + GPU(15%) stress test"
+    echo -e "\t 1. CPU(50%) + memtester(5%) + GPU(5%) + WIFI stress test"
+    echo -e "\t 2. CPU(50%) + memtester(5%) + GPU(5%) stress test"
     echo -e "\t 3. CPU stress test (100%)"
     echo -e "\t 4. GPU stress test (100%)"
     echo -e "\t 5. Memory stress test (100%)"
@@ -31,7 +32,7 @@ function menu {
     read -n 1 option
 }
 
-while [ 1 ]
+while true
 do
     menu
     echo
@@ -39,31 +40,31 @@ do
     0)
         exit ;;
     1)
-        ${EXEC_PATH}/thermal_cpu_mem_gpu_wifi.sh
+        "${EXEC_PATH}"/thermal_cpu_mem_gpu_wifi.sh
         ;;
     2)
-        ${EXEC_PATH}/thermal_cpu_mem_gpu.sh
+        "${EXEC_PATH}"/thermal_cpu_mem_gpu.sh
         ;;
     3)
-        ${EXEC_PATH}/thermal_cpu.sh
+        "${EXEC_PATH}"/thermal_cpu.sh
         ;;
     4)
-        ${EXEC_PATH}/thermal_gpu.sh
+        "${EXEC_PATH}"/thermal_gpu.sh
         ;;
     5)
-        ${EXEC_PATH}/thermal_mem.sh
+        "${EXEC_PATH}"/thermal_mem.sh
         ;;
     6)
-        ${EXEC_PATH}/thermal_vpu.sh
+        "${EXEC_PATH}"/thermal_vpu.sh
         ;;
     7)
-        ${EXEC_PATH}/configure_wifi.sh
+        "${EXEC_PATH}"/configure_wifi.sh
         ;;
     8)
-        ${EXEC_PATH}/thermal_wifi.sh
+        "${EXEC_PATH}"/thermal_wifi.sh
         ;;
     9)
-        ${EXEC_PATH}/thermal_cpu_wifi.sh
+        "${EXEC_PATH}"/thermal_cpu_wifi.sh
         ;;
     *)
         clear
