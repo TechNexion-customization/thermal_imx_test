@@ -23,6 +23,18 @@ if [ -f  "$LOG" ]; then
 fi
 echo LOG file is created under "$LOG"
 
+TOTAL_LOAD=60
+# Set CPU burning test with 50% load
+CPU_LOAD=50
+
+USABLE_LOAD=$(( (TOTAL_LOAD - CPU_LOAD) * $(nproc) ))
+#echo USABLE_LOAD is $USABLE_LOAD
+GPU_LOAD=$(( USABLE_LOAD/2 ))
+MEM_LOAD=$(( USABLE_LOAD/2 ))
+echo CPU_LOAD is $CPU_LOAD
+echo GPU_LOAD is $(( GPU_LOAD / $(nproc) ))
+echo MEM_LOAD is $(( MEM_LOAD / $(nproc) ))
+
 thermal_cpu_mem_gpu_wifi()
 {
     PID_THIS=$$
@@ -33,21 +45,21 @@ thermal_cpu_mem_gpu_wifi()
     do
         sleep 1
 
-        # Run CPU burning test with 50% load
+        # Run CPU burning test
         if ( ! check_pid_exist "$PID_CPU" ); then
-	        PID_CPU=$(cpu_burn 50)
+	        PID_CPU=$(cpu_burn "$CPU_LOAD")
             echo ----start cpu_burn, PID "$PID_CPU"----
         fi
 
         # Run GPU burning test
         if ( ! check_pid_exist "$PID_GPU" ); then
-	        PID_GPU=$(gpu_burn 15)
+	        PID_GPU=$(gpu_burn $GPU_LOAD)
             echo ----start gpu_burn, PID "$PID_GPU"----
         fi
 
         # Run DDR burning test
         if ( ! check_pid_exist "$PID_MEM" ); then
-	        PID_MEM=$(mem_burn 5)
+	        PID_MEM=$(mem_burn $MEM_LOAD)
             echo ----start mem_burn, PID "$PID_MEM"----
         fi
         failure_count=$(grep -c "FAILURE" "$MEM_LOG")
