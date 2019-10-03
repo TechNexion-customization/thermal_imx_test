@@ -19,16 +19,16 @@ printf "Scanning WIFI AP... \n"
 
 connmanctl scan wifi
 connmanctl services > /tmp/wifi_log
-echo ==========================
+echo "=========================="
 printf "AP in use: \n"
-echo ==========================
-(cat /tmp/wifi_log | grep AO) || echo Not connect to AP
+echo "=========================="
+(grep AO /tmp/wifi_log) || echo Not connect to AP
 
 echo 
-echo ==========================
+echo "=========================="
 printf "List available AP: \n"
-echo ==========================
-cat /tmp/wifi_log | awk 'FNR == 1 {next} {print $(NF-1)}'
+echo "=========================="
+awk 'FNR == 1 {next} {print $(NF-1)}' /tmp/wifi_log
 
 echo
 read -p "Please select the AP that you want to connect: " AP_NANE
