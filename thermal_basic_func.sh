@@ -61,7 +61,7 @@ gpu_burn()
 
 # Parameter: 1. CPU_LOAD(Optional. Without this parameter, It runs at full-load.)
 # Return: PID of memtester
-MEM_LOG=/tmp/memtester_test.log
+MEM_LOG=/memtester_test.log
 mem_burn()
 {
     if [ -f  $MEM_LOG ] ; then
