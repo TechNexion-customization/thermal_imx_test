@@ -41,10 +41,14 @@ cpu_burn()
 gpu_burn()
 {
     export DISPLAY=:0
-
+    WESTON_INI=/etc/xdg/weston/weston.ini
     # Run glmark2 test
     # Get real full name of glmark2 on different platforms
-    GL_MARK=$(compgen -c | grep glmark2)
+    if [ -f $WESTON_INI ]; then
+        GL_MARK=$(compgen -c | grep glmark2-es2-wayland)
+    else
+        GL_MARK=$(compgen -c | grep glmark2-es2)
+    fi
 
     ( $GL_MARK --run-forever --fullscreen --annotate > /dev/null ) &
     if [ $? -eq 0 ]; then
