@@ -75,14 +75,15 @@ if (is_ap_connected); then
                                 oldret=$ret
                                 [ $samecount -gt 5 ] && ret=0
                                 [ $samecount -ge 3 ] && samecount=0 && killall iperf && sleep 2 && is_ap_connected && is_ipget && iperf_test $IPERF_SRV &
-                                cputmp=$(cut -c1-2 </sys/class/thermal/thermal_zone0/temp).$(cut -c3-5 </sys/class/thermal/thermal_zone0/temp)
+                                cputmp=$(sed 's/000//' /sys/class/thermal/thermal_zone0/temp)
                                 cpufreq=$(sed 's/000//' /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq)
                                 timestamp=$(date +"[%D %T]")
                                 if [ "$WIFI_DRV" != "wlan" ] && [ "$WIFI_DRV" != "qca9377" ]; then
-                                        echo "$timestamp CPU Freq./Temp.: $cpufreq MHz/$cputmp ^C, BW: $ret KBits/sec" | tee -a /tmp/wifilog_"$mac"
+                                        echo "$timestamp CPU Freq/Temp: $cpufreq MHz/$cputmp ^C, BW: $ret KBits/sec" | tee -a /tmp/wifilog_"$mac"
                                 else
                                         chiptmp=$(iwpriv wlan0 get_temp | cut -d : -f2 | tr -d ' ')
-                                        echo "$timestamp CPU Freq./Temp.: $cpufreq MHz/$cputmp ^C, WiFi Temp.: $chiptmp, BW: $ret KBits/sec" | tee -a /tmp/wifilog_"$mac"
+                                        wifirssi=$(iwpriv wlan0 getRSSI | cut -d = -f2)
+                                        echo "$timestamp CPU Freq/Temp: $cpufreq MHz/$cputmp ^C, WiFi RSSI: $wifirssi, Temp: $chiptmp, BW: $ret KBits/sec" | tee -a /tmp/wifilog_"$mac"
                                 fi
                                 count=0
                         fi
