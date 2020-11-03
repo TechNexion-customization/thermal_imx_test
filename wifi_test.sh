@@ -1,7 +1,18 @@
 #!/bin/bash
 
+#################################################################################
+# Copyright 2020 Technexion Ltd.
+#
+# Author: Ray Chang <ray.chang@technexion.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#################################################################################
+
 CPUBURN=no
-IPERF_SRV=10.88.88.88
+IPERF_SERVER=10.88.88.88
+IPERF_PORT=5201
 WIFI_DRV=wlan
 IFACE=wlan0
 
@@ -42,7 +53,7 @@ led_off() {
 }
 
 iperf_test() {
-        iperf3 -f k -c "$1" -t 7 -w 320k -P 4 -l 24000 >/tmp/iperflog
+        iperf3 -f k -c "$IPERF_SERVER" -p "$IPERF_PORT" -t 7 -w 320k -P 4 -l 24000 >/tmp/iperflog
 }
 
 if [ "$CPUBURN" == "yes" ]; then
@@ -50,6 +61,9 @@ if [ "$CPUBURN" == "yes" ]; then
 fi
 
 led_on
+
+PID_THIS=$$
+echo "PID is: $PID_THIS"
 
 macaddr=$(cat /sys/bus/sdio/devices/*/net/$IFACE/address)
 mac=${macaddr//:/}
@@ -68,13 +82,13 @@ if (is_ap_connected); then
                 oldret=-1
                 while true; do
                         [ $samecount -lt 5 ] && [ -n "$ret" ] && [ $ret -ne 0 ] && led_on
-                        [ $count -eq 1 ] && iperf_test $IPERF_SRV &
+                        [ $count -eq 1 ] && iperf_test &
                         if [ $count -gt 43 ]; then
                                 ret=$(tail -n3 </tmp/iperflog | head -n1 | awk '{printf("%d", $6)}')
                                 if [ "$ret" == "$oldret" ]; then samecount=$((samecount + 1)); else samecount=0; fi
                                 oldret=$ret
                                 [ $samecount -gt 5 ] && ret=0
-                                [ $samecount -ge 3 ] && samecount=0 && killall iperf && sleep 2 && is_ap_connected && is_ipget && iperf_test $IPERF_SRV &
+                                [ $samecount -ge 3 ] && samecount=0 && killall iperf3 && sleep 2 && is_ap_connected && is_ipget && iperf_test &
                                 cputmp=$(sed 's/000//' /sys/class/thermal/thermal_zone0/temp)
                                 cpufreq=$(sed 's/000//' /sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_cur_freq)
                                 timestamp=$(date +"[%D %T]")
